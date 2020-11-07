@@ -12,33 +12,20 @@ import "./Footer.css";
 import { Grid, Slider } from "@material-ui/core";
 
 function Footer({ spotify }) {
-  const [{ token, item, playing }, dispatch] = useStateValue();
-
-  useEffect(() => {
-    spotify.getMyCurrentPlaybackState().then((r) => {
-      console.log(r);
-
-      dispatch({
-        type: "SET_PLAYING",
-        playing: r.is_playing,
-      });
-
-      dispatch({
-        type: "SET_ITEM",
-        item: r.item,
-      });
-    });
-  }, [spotify]);
+  const [{ token, item, playing, audio,discover_weekly }, dispatch] = useStateValue();
+  const [index, setIndex] = useState(0);
 
   const handlePlayPause = () => {
     if (playing) {
-      spotify.pause();
+      audio.pause();
+	  
       dispatch({
         type: "SET_PLAYING",
         playing: false,
       });
     } else {
-      spotify.play();
+      audio.play();
+	  
       dispatch({
         type: "SET_PLAYING",
         playing: true,
@@ -47,31 +34,121 @@ function Footer({ spotify }) {
   };
 
   const skipNext = () => {
-    spotify.skipToNext();
-    spotify.getMyCurrentPlayingTrack().then((r) => {
-      dispatch({
-        type: "SET_ITEM",
-        item: r.item,
-      });
-      dispatch({
-        type: "SET_PLAYING",
-        playing: true,
-      });
-    });
-  };
+		let i = index+1;
+		setIndex(i)
+		
+		if(index===0){
+			i=0;
+		}
+		
+		if(index===29){
+			i=0;
+			setIndex(i)
+		}
+		
+        if(playing){
+		    audio.pause();
+			
+			dispatch({
+				type: "SET_PLAYING",
+				playing: false,
+			});
+			
+			const audioNow = new Audio(discover_weekly.tracks.items[i].track.preview_url);
+			audioNow.play();
+			
+			dispatch({
+				type: "SET_ITEM",
+				item: discover_weekly.tracks.items[i].track,
+			});
+			
+			dispatch({
+				type: "SET_PREVAUDIO",
+				audio: audioNow,
+			});
+			
+			dispatch({
+				type: "SET_PLAYING",
+				playing: true,
+			});
+			
+		}else{
+
+			const audioNow = new Audio(discover_weekly.tracks.items[i].track.preview_url);
+			audioNow.play();
+			
+			dispatch({
+				type: "SET_ITEM",
+				item: discover_weekly.tracks.items[i].track,
+			});
+			
+			dispatch({
+				type: "SET_PLAYING",
+				playing: true,
+			});
+			
+			dispatch({
+				type: "SET_PREVAUDIO",
+				audio: audioNow,
+			});
+		}
+    };
 
   const skipPrevious = () => {
-    spotify.skipToPrevious();
-    spotify.getMyCurrentPlayingTrack().then((r) => {
-      dispatch({
-        type: "SET_ITEM",
-        item: r.item,
-      });
-      dispatch({
-        type: "SET_PLAYING",
-        playing: true,
-      });
-    });
+        let i = index-1;
+		setIndex(i)
+		
+		if(index===0){
+			i=29;
+			setIndex(i)
+		}
+		
+        if(playing){
+		    audio.pause();
+			
+			dispatch({
+				type: "SET_PLAYING",
+				playing: false,
+			});
+			
+			const audioNow = new Audio(discover_weekly.tracks.items[i].track.preview_url);
+			audioNow.play();
+			
+			dispatch({
+				type: "SET_ITEM",
+				item: discover_weekly.tracks.items[i].track,
+			});
+			
+			dispatch({
+				type: "SET_PREVAUDIO",
+				audio: audioNow,
+			});
+			
+			dispatch({
+				type: "SET_PLAYING",
+				playing: true,
+			});
+			
+		}else{
+
+			const audioNow = new Audio(discover_weekly.tracks.items[i].track.preview_url);
+			audioNow.play();
+			
+			dispatch({
+				type: "SET_ITEM",
+				item: discover_weekly.tracks.items[i].track,
+			});
+			
+			dispatch({
+				type: "SET_PLAYING",
+				playing: true,
+			});
+			
+			dispatch({
+				type: "SET_PREVAUDIO",
+				audio: audioNow,
+			});
+		}
   };
 
   return (
@@ -99,7 +176,7 @@ function Footer({ spotify }) {
 
       <div className="footer__center">
         <ShuffleIcon className="footer__green hide" />
-        <SkipPreviousIcon onClick={skipNext} className="footer__icon hide" />
+        <SkipPreviousIcon onClick={skipPrevious} className="footer__icon hide" />
         {playing ? (
           <PauseCircleOutlineIcon
             onClick={handlePlayPause}
@@ -113,7 +190,7 @@ function Footer({ spotify }) {
             className="footer__icon"
           />
         )}
-        <SkipNextIcon onClick={skipPrevious} className="footer__icon hide" />
+        <SkipNextIcon onClick={skipNext} className="footer__icon hide" />
         <RepeatIcon className="footer__green hide" />
       </div>
       <div className="footer__right hide">

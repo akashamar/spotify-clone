@@ -13,7 +13,6 @@ export const initialState = {
 };
 
 const reducer = (state, action) => {
-  console.log(action);
   switch (action.type) {
     case "SET_USER":
       return {
@@ -62,6 +61,11 @@ const reducer = (state, action) => {
         ...state,
         playlists: action.playlists,
       };
+	case "SET_PREVAUDIO":
+	  return{
+		  ...state,
+		  audio: action.audio,
+		}
     default:
       return state;
   }

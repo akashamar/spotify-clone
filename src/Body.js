@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState} from "react";
 import "./Body.css";
 import Header from "./Header";
 import { useStateValue } from "./StateProvider";
@@ -8,45 +8,82 @@ import FavoriteIcon from "@material-ui/icons/Favorite";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 
 function Body({ spotify }) {
-  const [{ discover_weekly }, dispatch] = useStateValue();
+  const [{ discover_weekly, audio, playing}, dispatch] = useStateValue();
+  
+  const [url, setUrl] = useState("");
 
-  const playPlaylist = (id) => {
-    spotify
-      .play({
-        context_uri: `spotify:playlist:37i9dQZEVXcNb8vfk9jRdN`,
-      })
-      .then((res) => {
-        spotify.getMyCurrentPlayingTrack().then((r) => {
-          dispatch({
-            type: "SET_ITEM",
-            item: r.item,
-          });
-          dispatch({
-            type: "SET_PLAYING",
-            playing: true,
-          });
-        });
-      });
-  };
-
-  const playSong = (id) => {
-    spotify
-      .play({
-        uris: [`spotify:track:${id}`],
-      })
-      .then((res) => {
-        spotify.getMyCurrentPlayingTrack().then((r) => {
-          dispatch({
-            type: "SET_ITEM",
-            item: r.item,
-          });
-          dispatch({
-            type: "SET_PLAYING",
-            playing: true,
-          });
-        });
-      });
-  };
+  const [prevAudio,setprevAudio] = useState(null);
+	  
+    const playSong = (track) => {
+	    if(playing) {
+			audio.pause();
+		}
+		
+		if(url === track.preview_url){	
+		
+           dispatch({
+				type: "SET_ITEM",
+				item: track,
+			});
+		  
+			prevAudio.pause()
+			
+			dispatch({
+				type: "SET_PLAYING",
+				playing: false,
+			});
+			
+			
+			const audio = new Audio(track.preview_url);
+			
+			dispatch({
+				type: "SET_PREVAUDIO",
+				audio: audio,
+			});
+				
+			audio.play();
+			
+			dispatch({
+				type: "SET_PLAYING",
+				playing: true,
+			});
+			
+			
+			setUrl(track.preview_url)
+			setprevAudio(audio)
+		}
+		else{
+				if(url != ""){ 
+					prevAudio.pause();
+					
+					dispatch({
+						type: "SET_PLAYING",
+						playing: false,
+					});
+				}
+				const audio = new Audio(track.preview_url);
+				
+				dispatch({
+					type: "SET_PREVAUDIO",
+					audio: audio,
+				});
+				
+				dispatch({
+					type: "SET_ITEM",
+					item: track,
+				});
+				
+				audio.play()
+				
+				dispatch({
+					type: "SET_PLAYING",
+					playing: true,
+				});
+			
+				setprevAudio(audio)	
+				setUrl(track.preview_url)
+		}
+	};
 
   return (
     <div className="body">
@@ -67,7 +104,7 @@ function Body({ spotify }) {
         <div className="body__icons">
           <PlayCircleFilledIcon
             className="body__shuffle"
-            onClick={playPlaylist}
+            
           />
           <FavoriteIcon className="heart" fontSize="large" />
           <MoreHorizIcon className="threedot" />
